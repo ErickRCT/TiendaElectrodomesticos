@@ -1,0 +1,104 @@
+version: '1.0'
+
+services:
+  eureka-sv:
+    build: eureka-sv
+    mem_limit: 512m
+    ports:
+      - "8761:8761" 
+    networks:
+      - 'tiendaelectro-network'
+
+  producto:
+    build: producto
+    mem_limit: 512m
+    ports:
+      - "8080:8080" 
+    networks:
+      - 'tiendaelectro-network'
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://producto_db:3306/producto?createDatabaseIfNotExist=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: ""
+    restart: always
+    depends_on:
+      producto_db:
+        condition: service_healthy
+      
+  carrito:
+    build: carrito
+    mem_limit: 512m
+    ports:
+      - "8081:8081" 
+    networks:
+      - 'tiendaelectro-network'
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://carrito_db:3306/carrito?createDatabaseIfNotExist=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: ""
+    restart: always
+    depends_on:
+      carrito_db:
+        condition: service_healthy
+
+  venta:
+    build: venta
+    mem_limit: 512m
+    ports:
+      - "8082:8082" 
+    networks:
+      - 'tiendaelectro-network'
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://venta_db:3306/venta?createDatabaseIfNotExist=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: ""
+    restart: always
+    depends_on:
+      venta_db:
+        condition: service_healthy
+
+  producto_db:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: ""
+      MYSQL_DATABASE: producto
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+    networks:
+      - tiendaelectro-network
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  carrito_db:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: ""
+      MYSQL_DATABASE: carrito
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+    networks:
+      - tiendaelectro-network
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  venta_db:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: ""
+      MYSQL_DATABASE: venta
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+    networks:
+      - tiendaelectro-network
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  tiendaelectro-network:
+    driver: bridge
